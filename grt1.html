@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>JSON to Java Pojo Classes</title>
+<img src="">
+ <div class="container-fluid">
+<div class="page-header">
+<h1 style="color: rgb(43, 43, 172);
+border: 2px solid gray;
+text-align: center;
+border-radius: 10%;
+height: 50px;
+width: 50%;
+font-family: 'Times New Roman', Times, serif;">JSON to Pojo class Converting</h1>
+</div>
+
+<label style="background-color: rgb(21, 31, 175);
+color: rgb(255, 255, 255);">Enter input in JSON:</label>
+<form lpformnum="1">
+<textarea class="form-control resizable" cols="50" rows="10" id="jsonval"></textarea>
+<br>
+<div class="row">
+    <div class="col-md-12">
+    <div class="form-group form-inline">
+    <input type="button" id="2csharp" value="Execute" class="btn btn-primary">
+    </div>
+    </div>
+    </div>
+    <br>
+    <br>
+<label style="background-color: rgb(26, 28, 163);
+color: white;">Output:</label><br>
+<textarea class="form-control resizable" cols="50" rows="10" id="result"></textarea>
+</div>
+</div>
+ </div>
+</form>
+
+<form action=""></form>
+<a href="grt1.html" download="grt1.html">
+    <input type="button" id="2csharp" value="Download" class="btn btn-primary">
+</a>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script type="text/javascript" src="js/jquery.textarearesizer.compressed.js"></script>
+<script>
+
+String.prototype.format = function (args) {
+    if (arguments.length > 0) {
+        var result = this;
+        if (arguments.length == 1 && typeof (args) == "object") {
+            for (var key in args) {
+                var reg = new RegExp("({" + key + "})", "g");
+                result = result.replace(reg, args[key]);
+            }
+        }
+        else {
+            for (var i = 0; i < arguments.length; i++) {
+                if (arguments[i] == undefined) {
+                    result = result.replace(reg, arguments[i]);
+                }
+                else {
+                    var reg = new RegExp("({[" + i + "]})", "g");
+                    result = result.replace(reg, arguments[i]);
+                }
+            }
+        }
+        return result;
+    }
+    else {
+        return this;
+    }
+}
+
+
+
+var tools = {
+    clear: function (array) {
+        for (var i = 0; i < array.length; i++) {
+            if (array[i]) {
+                array[i].value = '';
+                $(array[i]).siblings("b").show();
+            }
+        }
+    },
+    htmlcheck: function () {
+        $("li.errorline a").click(function () {
+            var line = $(this).attr("line");
+            var htmltext = $('#htmltext');
+            htmltext.focus();
+            var linepos = htmltext.val().indexOf(line);
+            SelectRange(htmltext[0], linepos, linepos);
+        });
+    },
+    pagecode: function () {
+        $("div.TabheadWrap a").click(function () {
+            $(this).addClass("Tabon").siblings().removeClass("Tabon");
+            $("#codecolor").val($(this).attr("val"));
+            $("form").submit();
+        });
+    },
+    webdebugger: {
+        Webtest: function () {
+            var win = window.open();
+            win.document.open();
+            win.document.write($('#content').val());
+            win.document.close();
+        },
+        saveCode: function () {
+            if (!document.all) {
+                alert('error');
+                return;
+            }
+            var win = window.open('', '', 'top=10000,left=10000');
+            win.document.write(document.all.content.innerText)
+            win.document.execCommand('SaveAs', '')
+            win.close();
+        },
+        init: function () {
+            var _this = this;
+            $("#test").click(function () {
+                _this.Webtest();
+            });
+            $("#select").click(function () {
+                $("#content").select();
+            });
+            $("#clear").click(function () {
+                $("#content").val("");
+            });
+            $("#save").click(function () {
+                _this.saveCode();
+            });
+        }
+    },
+    htmlfilter: {
+        fhtml: true,
+        fjs: false,
+        fcss: false,
+        fself: false,
+        Filter: function () {
+            var s = jQuery("#content").val();
+            if (!this.fhtml && !this.fjs && !this.fcss && !this.fself)
+                this.fhtml = true;
+            if (this.fjs)
+                s = s.replace(/<\s*script[^>]*>(.|[\r\n])*?<\s*\/script[^>]*>/gi, '');
+            if (this.fcss)
+                s = s.replace(/<\s*style[^>]*>(.|[\r\n])*?<\s*\/style[^>]*>/gi, '');
+            if (this.fhtml) {
+                s = s.replace(/<\/?[^>]+>/g, '');
+                s = s.replace(/\&[a-z]+;/gi, '');
+                s = s.replace(/\s+/g, '\n');
+            }
+            if (this.fself)
+                s = s.replace(new RegExp(jQuery("#preplace").val(), 'g'), $("#nextplace").val());
+            jQuery("#result").val(s).removeClass("col-gray");
+        },
+        checked: function (obj) {
+            var thisv = jQuery(obj).val();
+            var set = jQuery(obj).prop("checked");
+            if (thisv == 3) {
+                if (set) {
+                    this.fhtml = false;
+                    this.fjs = false;
+                    this.fcss = false;
+                    this.fself = true;
+                    jQuery(obj).siblings("[name=type]").prop("checked", false);
+                    jQuery("#place").removeClass("autohide");
+                }
+                else {
+                    this.fhtml = true;
+                    this.fself = false;
+                    jQuery("#place").addClass("autohide");
+                    jQuery("input[name=type]").eq(1).prop("checked", true);
+                }
+            }
+            else {
+                jQuery("#place").addClass("autohide");
+                jQuery("input[name=type]").eq(0).prop("checked", false);
+                switch (thisv) {
+                    case "0": if (set) { this.fhtml = true; this.fself = false; } else { this.fhtml = false; } break;
+                    case "1": if (set) { this.fjs = true; this.fself = false; } else { this.fjs = false; } break;
+                    case "2": if (set) { this.fcss = true; this.fself = false; } else { this.fcss = false; } break;
+                }
+                var _this = this;
+                _this.Filter();
+            }
+        },
+        init: function (path) {
+            var _this = this;
+            jQuery("input[name=type]").bind("click", function () {
+                _this.checked(this);
+            });
+            jQuery("#filter").click(function () {
+                _this.Filter();
+                jQuery("#result").siblings(".CentHid").hide();
+            });
+            jQuery("#clear").click(function () {
+                jQuery("#content").val("");
+                jQuery("#result").val("");
+            });
+        }
+    },
+    checkbox: function (t) {
+        $(".js-FilterItem li").click(function (e) {
+            if (!$(this).hasClass("selected")) {
+                $(this).addClass("selected");
+                fn(this);
+            } else {
+                $(this).removeClass("selected");
+                fn(this);
+            }
+        });
+        function fn(obj) {
+            if (t == "reg") {
+                var index = $(obj).index();
+                if (index == 5) {
+                    $("#chkboxhide input").eq(6).prop("checkbox", false).removeAttr("checked");
+                    $("#_chkboxhide li").eq(6).removeClass("selected");
+                } else if (index == 6) {
+                    $("#chkboxhide input").eq(5).prop("checkbox", false).removeAttr("checked");
+                    $("#_chkboxhide li").eq(5).removeClass("selected");
+                }
+                $("#chkboxhide input").eq(index).click();
+            }
+            else
+                if ($(obj).find("input").val()) $(obj).find("input").val(""); else $(obj).find("input").val($(obj).attr("val"));
+        }
+    },
+    jsonTool: {
+        jsontocsharp: {
+            init: function (path) {
+                var _this = this;
+                $(".ToolChoesecj").each(function () {
+                    _select({
+                        select: $(this).find(".SearChoese"),
+                        options: $(this).find("ul.SearChoese-show"),
+                        option: $(this).find("ul.SearChoese-show li a"),
+                        t: "slide",
+                        parents: $(".ToolChoesecj"),
+                        callback: function () {
+                            if ($("#showtype").val() == 1)
+                                $(".javawh").addClass("autohide");
+                            else
+                                $(".javawh").removeClass("autohide");
+                        }
+                    });
+                });
+
+                $("#2csharp").click(function () {
+                    if (!$("#jsonval").val().trim()) {
+                        alert("JSON error");
+                        return false;
+                    }
+                    try {
+                        var v = eval("(" + document.getElementById("jsonval").value + ")");
+                        var res = "";
+                        if ($("#showtype").val() == 1)
+                            res = _this.JSON2CSharp.convert(v);
+                        else
+                            res = _this.JSON2POJO.convert(v);
+                        $("#result").val(res).siblings("b").hide();
+                    } catch (e) {
+                        alert("Generate entity error，check JSON code.");
+                    }
+                });
+                $("#testjson").click(function () {
+                     $("#jsonval").val(testjson).siblings("b").hide();
+                });
+                $("#clear").click(function () {
+                    tools.clear([getid('result'), getid('jsonval')]);
+                });
+            },
+            JSON2POJO: {
+                _allClass: [],
+                _genClassCode: function (obj, name) {
+                    var packageval = $("#packageval").val(), isfill = $("#isfill").prop("checked");
+                    var clas = "";
+                    var str = "";
+                    var privateAttr = "", publicAttr = "", fill = "", filllist = "";
+                    if (isfill) {
+                        fill += "    public static {0} fill(JSONObject jsonobj){\r\n".format(name || "Root");
+                        fill += "        {0} entity = new {0}();\r\n".format(name || "Root");
+
+                        filllist += "    public static List<{0}> fillList(JSONArray jsonarray) {\r\n";
+                        filllist += "        if (jsonarray == null || jsonarray.size() == 0)\r\n";
+                        filllist += "            return null;\r\n";
+                        filllist += "        List<{0}> olist = new ArrayList<{0}>();\r\n";
+                        filllist += "        for (int i = 0; i < jsonarray.size(); i++) {\r\n";
+                        filllist += "            olist.add(fill(jsonarray.getJSONObject(i)));\r\n";
+                        filllist += "        }\r\n";
+                        filllist += "        return olist;\r\n";
+                        filllist += "    }\r\n";
+                        filllist = filllist.format(name || "Root");
+                    }
+                    for (var n in obj) {
+                        var v = obj[n];
+                        n = n.trim();
+                        var tp = this._genTypeByProp(n, v);
+                        var _type = tp.type;
+                        if (tp.islist) {
+                            if (isfill)
+                                str = "\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\nimport net.sf.json.JSONObject;\r\nimport net.sf.json.JSONArray;\r\npublic class {0}\r\n{\r\n".format(name || "Root", packageval);
+                            else
+                                str = "\r\nimport java.util.ArrayList;\r\nimport java.util.List;\r\npublic class {0}\r\n{\r\n".format(name || "Root", packageval, "\r\nimport java.util.List;");
+                        }
+                        privateAttr += "    private {0} {1};\r\n\r\n".format(_type, n);
+                        var firstChar = n.substring(0, 1).toUpperCase() + n.substring(1);
+                        publicAttr += "    public void set{2}({0} {1}){\r\n        this.{1} = {1};\r\n    }\r\n".format(_type, n, firstChar);
+                        publicAttr += "    public {0} get{2}(){\r\n        return this.{1};\r\n    }\r\n".format(_type, n, firstChar);
+
+                        if (isfill) {
+                            fill += "        if (jsonobj.containsKey(\"{0}\")) {\r\n".format(n);
+                            var _typefirstChartoUpper = _type.substring(0, 1).toUpperCase() + _type.substring(1);
+                            fill += "            entity.set{1}(jsonobj.get{2}(\"{0}\"));        \r\n        }\r\n".format(n, n.substring(0, 1).toUpperCase() + n.substring(1), _typefirstChartoUpper.indexOf("List") >= 0 ? "JSONArray" : _typefirstChartoUpper);
+                        }
+                    }
+                    
+                    if (!str) {
+                        if (isfill)
+                            clas += "package {1};\r\nimport net.sf.json.JSONObject;\r\nimport net.sf.json.JSONArray;\r\npublic class {0}\r\n{\r\n".format(name || "Root", packageval);
+                        else
+                            clas += "package {1};\r\npublic class {0}\r\n{\r\n".format(name || "Root", packageval);
+                    }
+                    else
+                        clas += str;
+                    if (isfill) {
+                        fill += "        return entity;\r\n    }\r\n";
+                    }
+                    clas += privateAttr;
+                    clas += publicAttr;
+                    clas += fill;
+                    clas += filllist;
+                    clas += "}\r\n";
+                    this._allClass.push(clas);
+                    return this._allClass.join("\r\n");
+                },
+                _genTypeByProp: function (name, val) {
+                    try {
+                        if (typeof val == "string") {    
+                            if (regdt.test(val.trim()))
+                                val = new Date(val);
+                        }
+                    } catch (e) {
+
+                    }
+                    switch (Object.prototype.toString.apply(val)) {
+                        case "[object Number]":
+                            {
+                                return { type: val.toString().indexOf(".") > -1 ? "double" : "int" };
+                            }
+                        case "[object Date]":
+                            {
+                                return { type: "DateTime" };
+                            }
+                        case "[object Object]":
+                            {
+                                name = name.substring(0, 1).toUpperCase() + name.substring(1);
+                                this._genClassCode(val, name);
+                                return { type: name };
+                            }
+                        case "[object Array]":
+                            {
+                                return { type: "List<double>".format(this._genTypeByProp(name, val[0]).type), islist: true };
+                            }
+                        case "[object Boolean]":
+                            {
+                                return { type: "boolean" };
+                            }
+                        default:
+                            {
+                                return { type: "String" };
+                            }
+                    }
+                },
+                convert: function (jsonObj) {
+                    this._allClass = [];
+                    return this._genClassCode(jsonObj);
+                }
+            }
+        },
+    }
+}
+var jsontool = tools.jsonTool;
+</script>
+<script>
+    jsontool.jsontocsharp.init();
+</script>
+</body>
+</html>
